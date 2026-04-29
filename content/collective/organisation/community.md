@@ -1,7 +1,7 @@
 ---
 title: "Community"
 description: "How to join the Nano Collective community and contribute"
-sidebar_order: 4
+sidebar_order: 1
 ---
 
 # Community
@@ -54,16 +54,11 @@ You do not need to write code to help build the Nano Collective. A few ways peop
 3. Browse open issues. Look for ones tagged `good first issue` or `help wanted` if you are new.
 4. Comment on the issue to claim it, ask questions, and open a PR when you are ready.
 
-For the conventions that apply across every project in the collective — repo structure, CI, testing, release process — see the [Creating a New Project](/collective/creating-a-new-project) guide. For stack-specific tooling suggestions, see [Stack Suggestions](/collective/stack-suggestions).
+For the conventions that apply across every project in the collective — repo structure, CI, testing, release process — see the [Creating a New Project](/collective/projects/creating-a-new-project) guide. For stack-specific tooling suggestions, see [Stack Suggestions](/collective/projects/stack-suggestions).
 
 ## Supporting the Collective
 
-The Nano Collective is built by volunteers and offered freely. If the work has been useful to you, there are a few ways to support it beyond contributing code:
-
-- **Donations** — A donation programme is being finalised. Check back soon or join the [Discord](https://discord.gg/ktPDV6rekE) to be notified when it is live.
-- **Sponsorship** — Sponsors help us dedicate more time to development, fund contributors fairly, and keep everything we build free and open. Sponsorship details are coming soon — reach out on [Discord](https://discord.gg/ktPDV6rekE) or [GitHub](https://github.com/Nano-Collective) if interested.
-
-Any funds raised go back into the mission: compensating contributors and making sure quality AI tooling is not locked behind a paywall.
+The Nano Collective is built by volunteers and offered freely. If the work has been useful to you and you would like to help sustain it — through donations, sponsorship, or other means — see [Support the Collective](/collective/organisation/support) for the current channels and how to get involved. Any funds the collective receives go to the cost of running NC and the [community fund](/collective/organisation/economics-charter) that pays bounties to contributors. Nothing else.
 
 ## Code of Conduct
 

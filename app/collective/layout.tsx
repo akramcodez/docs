@@ -1,17 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import type { MdxFile, PageMapItem } from "nextra";
+import type { Folder, MdxFile, PageMapItem } from "nextra";
 import { Layout, Navbar, ThemeSwitch } from "nextra-theme-docs";
 import CustomFooter from "@/components/home/Footer";
 import { ProjectSearch } from "@/components/ProjectSearch";
 import "nextra-theme-docs/style.css";
 
-interface CollectiveDoc {
-  slug: string;
-  title: string;
-  sidebar_order?: number;
-}
+const CONTENT_ROOT = path.join(process.cwd(), "content", "collective");
 
 function parseFrontmatter(content: string): {
   title?: string;
@@ -29,31 +25,94 @@ function parseFrontmatter(content: string): {
   return fm;
 }
 
-function getCollectiveDocs(): CollectiveDoc[] {
-  const dir = path.join(process.cwd(), "content", "collective");
+function nameFromSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function readFrontmatter(filePath: string): {
+  title?: string;
+  sidebar_order?: number;
+} {
+  if (!fs.existsSync(filePath)) return {};
+  const content = fs.readFileSync(filePath, "utf-8");
+  return parseFrontmatter(content);
+}
+
+function buildPageMapForDir(dir: string, routePrefix: string): PageMapItem[] {
   if (!fs.existsSync(dir)) return [];
 
-  const docs: CollectiveDoc[] = [];
-  for (const file of fs.readdirSync(dir)) {
-    if (!file.endsWith(".md") && !file.endsWith(".mdx")) continue;
-    const slug = file.replace(/\.(mdx|md)$/, "");
-    const content = fs.readFileSync(path.join(dir, file), "utf-8");
-    const fm = parseFrontmatter(content);
-    docs.push({
-      slug,
-      title:
-        fm.title ||
-        slug
-          .split("-")
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(" "),
+  const items: (PageMapItem & { sidebar_order?: number })[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const folderName = entry.name;
+      const folderPath = path.join(dir, folderName);
+      const folderRoute = `${routePrefix}/${folderName}`;
+      const indexFile = [
+        path.join(folderPath, "index.md"),
+        path.join(folderPath, "index.mdx"),
+      ].find((p) => fs.existsSync(p));
+      const folderFm = indexFile ? readFrontmatter(indexFile) : {};
+      const folderTitle = folderFm.title || nameFromSlug(folderName);
+      const children = buildPageMapForDir(folderPath, folderRoute);
+
+      const folder: Folder<PageMapItem> & {
+        title: string;
+        sidebar_order?: number;
+      } = {
+        name: folderName,
+        route: folderRoute,
+        title: folderTitle,
+        children,
+        sidebar_order: folderFm.sidebar_order,
+      } as Folder<PageMapItem> & { title: string; sidebar_order?: number };
+      items.push(folder as PageMapItem & { sidebar_order?: number });
+      continue;
+    }
+
+    if (!entry.isFile()) continue;
+    if (!entry.name.endsWith(".md") && !entry.name.endsWith(".mdx")) continue;
+
+    const slug = entry.name.replace(/\.(mdx|md)$/, "");
+    const fm = readFrontmatter(path.join(dir, entry.name));
+    const title = fm.title || nameFromSlug(slug);
+
+    if (slug === "index") {
+      items.push({
+        name: "index",
+        route: routePrefix,
+        title,
+        frontMatter: { title },
+        sidebar_order: fm.sidebar_order,
+      } as MdxFile & { sidebar_order?: number });
+      continue;
+    }
+
+    items.push({
+      name: slug,
+      route: `${routePrefix}/${slug}`,
+      title,
+      frontMatter: { title },
       sidebar_order: fm.sidebar_order,
-    });
+    } as MdxFile & { sidebar_order?: number });
   }
 
-  return docs.sort(
-    (a, b) => (a.sidebar_order ?? Infinity) - (b.sidebar_order ?? Infinity),
-  );
+  const itemName = (item: PageMapItem): string | undefined =>
+    "name" in item ? item.name : undefined;
+
+  items.sort((a, b) => {
+    if (itemName(a) === "index") return -1;
+    if (itemName(b) === "index") return 1;
+    const ao = a.sidebar_order ?? Infinity;
+    const bo = b.sidebar_order ?? Infinity;
+    return ao - bo;
+  });
+
+  return items;
 }
 
 export default function CollectiveLayout({
@@ -61,29 +120,7 @@ export default function CollectiveLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const docs = getCollectiveDocs();
-  const indexDoc = docs.find((d) => d.slug === "index");
-  const nonIndex = docs.filter((d) => d.slug !== "index");
-
-  const pageMap: PageMapItem[] = [];
-
-  if (indexDoc) {
-    pageMap.push({
-      name: "index",
-      route: "/collective",
-      title: indexDoc.title,
-      frontMatter: { title: indexDoc.title },
-    } as MdxFile);
-  }
-
-  for (const doc of nonIndex) {
-    pageMap.push({
-      name: doc.slug,
-      route: `/collective/${doc.slug}`,
-      title: doc.title,
-      frontMatter: { title: doc.title },
-    } as MdxFile);
-  }
+  const pageMap: PageMapItem[] = buildPageMapForDir(CONTENT_ROOT, "/collective");
 
   const navbar = (
     <Navbar

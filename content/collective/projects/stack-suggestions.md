@@ -1,12 +1,12 @@
 ---
 title: "Stack Suggestions"
 description: "Suggested tooling and conventions per language stack for Nano Collective projects"
-sidebar_order: 3
+sidebar_order: 2
 ---
 
 # Stack Suggestions
 
-The [Creating a New Project](/collective/creating-a-new-project) guide is intentionally stack-agnostic — it describes *what* every project needs (tests, linting, CI, docs, etc.) without mandating *how*. This doc fills in the *how* for each stack we actively use in the collective.
+The [Creating a New Project](/collective/projects/creating-a-new-project) guide is intentionally stack-agnostic — it describes *what* every project needs (tests, linting, CI, docs, etc.) without mandating *how*. This doc fills in the *how* for each stack we actively use in the collective.
 
 These are suggestions, not mandates. They represent what is working well today in existing Nano Collective projects, so a new project using the same stack can hit the ground running without re-deciding everything from scratch. If you have a good reason to diverge, diverge — and consider opening a PR on this doc if your approach is worth sharing.
 

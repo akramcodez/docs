@@ -8,6 +8,12 @@ sidebar_order: 1
 
 The Nano Collective is a community-led group of developers, designers, and maintainers building open-source AI tools for the people who use them. We build not for profit, but for the community. Everything we produce is open, transparent, and shaped by the people who rely on it.
 
+## Why This Matters
+
+AI is quickly becoming the most personal piece of infrastructure most people have ever used — the place they think out loud, work through problems, and increasingly hand off real parts of their workflow. The systems people are coming to depend on are largely owned by a small number of companies whose incentives are not aligned with the people using them. That gap is structural, and it is unlikely to close on its own.
+
+The Nano Collective exists because we think the alternative needs to be built deliberately, in the open, by people who care about getting it right.
+
 ## Our Mission
 
 The Nano Collective exists to make powerful AI tools more open, trustworthy, and accessible to everyone. We build privacy-first, local-first software that respects the people using it, keeps them in control of their own workflows, and avoids the lock-in, opacity, and short-term incentives that define too much of the AI ecosystem today.
@@ -19,7 +25,7 @@ We believe the future of AI should not belong only to large platforms, closed sy
 Three values sit at the centre of every project we ship:
 
 - **Privacy-Respecting** — Your data stays on your machine. Our tools respect your privacy and keep you in control of your own workflows.
-- **Local-First** — We favour tools that run locally and offline wherever possible. No cloud required, no data leaves your machine unless you say so.
+- **Local-First** — We favour tools that run on your own hardware wherever possible. Sovereignty is a spectrum: on-device by default, with privacy-preserving bridges to external capability only when the task genuinely requires it — and never at the cost of your data.
 - **Open for All** — Built by the community, for the community. Open source and transparent from day one. No closed source features, no paid tiers gating the useful bits.
 
 These values are not marketing — they are the filter we apply when deciding what to build, how to build it, and who gets to shape it.
@@ -35,7 +41,13 @@ The collective builds a range of AI tools and developer utilities. Some projects
 
 Projects under the Nano Collective run independently — each has its own maintainers, roadmap, and release cadence — but they share a consistent approach to how they are structured, tested, released, and presented. That consistency is deliberate: it makes the collective legible from the outside, lowers the barrier for contributors moving between projects, and ensures every tool we ship meets a shared bar for quality and openness.
 
-If you are creating a new project under the collective, read the [Creating a New Project](/collective/creating-a-new-project) guide. It walks through the conventions every Nano Collective repository should follow — from repo structure and CI, to licensing, testing, documentation, and release.
+If you are creating a new project under the collective, read the [Creating a New Project](/collective/projects/creating-a-new-project) guide. It walks through the conventions every Nano Collective repository should follow — from repo structure and CI, to licensing, testing, documentation, and release.
+
+## Where We Are Heading
+
+Today, the collective ships developer tools and utilities. The longer arc is broader: a coherent stack of open, sovereign AI infrastructure — local-first models and tooling at the core, privacy-preserving paths to external capability where it is genuinely needed, and an open ecosystem of specialist sub-agents and tools that any contributor can build, deploy, and have used across the projects we ship.
+
+We are not announcing those pieces in detail yet. They will arrive when they are real. What is worth saying now is that the projects already shipping are deliberate steps toward that picture, not isolated experiments.
 
 ## How We Operate
 
@@ -44,9 +56,13 @@ The Nano Collective is a volunteer community. Contributors range from seasoned m
 - **GitHub** — Source of truth for all projects, issues, discussions, and PRs. Find us at [github.com/Nano-Collective](https://github.com/Nano-Collective).
 - **Discord** — Real-time discussion, questions, and coordination. [Join here](https://discord.gg/ktPDV6rekE).
 
+The collective is volunteer-led today, and is fiscally hosted by the [Open Source Collective](https://opencollective.com/nano-collective) — meaning all incoming and outgoing funds are published transparently in real time. Sustainable contributor economics — ways for the people building this to be supported by the work itself — are something we are actively designing. The terms are written down in the [Economics Charter](/collective/organisation/economics-charter), versioned publicly so that every change is dated, explained, and applies only to new work going forward. As commercial revenue comes online, a ring-fenced community fund will pay scoped bounties to OSS contributors — nothing retrospective, nothing open-ended, all agreed before work begins.
+
 ## Getting Involved
 
 Whether you want to contribute code, improve documentation, design something better, or simply spread the word — we would love your help. There is no application process. Find a project that interests you, read its `CONTRIBUTING.md`, and open an issue or PR.
+
+The collective is still early. The contributors who show up now are the ones shaping what it becomes — the conventions, the tools, the direction, and the culture. If any of that sounds interesting, this is a good moment to get involved.
 
 Contributions we value (not exhaustive):
 

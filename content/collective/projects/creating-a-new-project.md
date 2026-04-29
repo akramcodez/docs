@@ -1,7 +1,7 @@
 ---
 title: "Creating a New Project"
 description: "Conventions and playbook for spinning up a new project under the Nano Collective"
-sidebar_order: 2
+sidebar_order: 1
 ---
 
 # Creating a New Project
@@ -36,10 +36,16 @@ Every project should include these top-level files:
 - `README.md` — the front door to the project (see [README](#readme) below)
 - `CONTRIBUTING.md` — how to contribute (see [CONTRIBUTING](#contributing-guide) below)
 - `LICENSE` — MIT License, copyright "Nano Collective"
-- `CODE_OF_CONDUCT.md` or an equivalent section in `CONTRIBUTING.md`
+- `CONTRIBUTING.md` should link the [collective Code of Conduct](/collective/organisation/community) rather than redefining it inline; a per-project `CODE_OF_CONDUCT.md` is unnecessary.
 - `.github/` — workflows, issue templates, PR template
 - `docs/` — user-facing documentation (see [Documentation](#documentation) below)
 - A package manifest appropriate to the language (`package.json`, `pyproject.toml`, `Cargo.toml`, etc.)
+
+## Brand and Tone
+
+Every project's user-facing copy — README, contributing guide, docs site, release notes — follows the [Brand Guidelines](/collective/organisation/brand). That page is the source of truth for the canonical project tagline, voice and tone, project naming and capitalisation, terms to avoid, and the required documentation patterns each project should follow.
+
+If you are spinning up a new project, read it before writing the first line of README copy. The sections below cover the *structural* expectations for each doc; the Brand Guidelines cover the *content and voice*.
 
 ## README
 
@@ -48,14 +54,14 @@ The `README.md` is the front door. It should tell a newcomer what the project is
 Recommended sections, in order:
 
 1. **Title and one-liner** — What is this, in one sentence.
-2. **Mission framing** — A short paragraph placing the project in the Nano Collective ("built by the [Nano Collective](https://github.com/Nano-Collective) — a community collective building AI tooling not for profit, but for the community").
+2. **Mission framing** — The canonical project tagline placing the project in the Nano Collective. The exact wording is in the [Brand Guidelines](/collective/organisation/brand#the-canonical-project-tagline) — use it verbatim.
 3. **Status badges** — Build, coverage, version, downloads, license, stars. Auto-generated badges live in a `badges/` directory and are updated by a workflow.
 4. **Quick start** — The fastest path to running the tool. Multiple install methods where relevant (npm, Homebrew, Nix).
 5. **Usage examples** — A handful of concrete command or code examples.
 6. **Documentation** — Link to the online docs and the local `docs/` folder.
 7. **Community** — Discord invite, contributing link, issues / discussions.
 
-Match the tone used across the collective: friendly, mission-driven, action-oriented, no jargon for jargon's sake.
+Match the tone used across the collective. The [Brand Guidelines](/collective/organisation/brand#voice-and-tone) define it precisely; in short, write operational, understated, honest copy and avoid manifesto register.
 
 ## Contributing Guide
 
@@ -66,7 +72,7 @@ Every project needs a `CONTRIBUTING.md`. It should:
 - Document the testing and linting expectations, and point to the single command that runs the full gate.
 - Describe coding standards in force for the project (strictness, naming, error handling).
 - Document the release process, with a clear note that contributors do not bump versions — that is a maintainer responsibility.
-- Include or link to the Code of Conduct.
+- Defer to the [collective Code of Conduct](/collective/organisation/community) and the [Economics Charter](/collective/organisation/economics-charter) — link, do not redefine. The [Brand Guidelines](/collective/organisation/brand#contributing-md) cover the exact patterns.
 
 Mirror [Nanocoder's CONTRIBUTING.md](https://github.com/Nano-Collective/nanocoder/blob/main/CONTRIBUTING.md) as the current reference.
 
@@ -86,7 +92,7 @@ Pre-commit hooks that auto-format staged files are a nice-to-have and save a lot
 
 Every project should have a test suite, coverage reporting, and a single catch-all command that runs the full gate (format, types, lint, tests) so contributors and CI can check a project's state in one go. The framework, test layout, and coverage thresholds are up to the project — pick what fits the stack.
 
-For language- and stack-specific recommendations, see [Stack Suggestions](/collective/stack-suggestions).
+For language- and stack-specific recommendations, see [Stack Suggestions](/collective/projects/stack-suggestions).
 
 ## CI / CD
 
@@ -119,7 +125,7 @@ Runs on pushes to `main`:
 
 Regenerates the status badges referenced from the README.
 
-For canonical, stack-specific implementations of these workflows, see [Nanocoder's `.github/workflows`](https://github.com/Nano-Collective/nanocoder/tree/main/.github/workflows) and the [Stack Suggestions](/collective/stack-suggestions) doc.
+For canonical, stack-specific implementations of these workflows, see [Nanocoder's `.github/workflows`](https://github.com/Nano-Collective/nanocoder/tree/main/.github/workflows) and the [Stack Suggestions](/collective/projects/stack-suggestions) doc.
 
 ## Issue and PR Templates
 
@@ -195,10 +201,9 @@ For CLI projects, theme support (as in Nanocoder) is encouraged — a handful of
 
 Before announcing a new project, run through this list:
 
-- [ ] `README.md` with the sections described above
-- [ ] `CONTRIBUTING.md`
+- [ ] `README.md` with the sections described above, opening with the canonical tagline from the [Brand Guidelines](/collective/organisation/brand)
+- [ ] `CONTRIBUTING.md` links the collective Code of Conduct and Charter rather than redefining them
 - [ ] `LICENSE` (MIT, "Nano Collective")
-- [ ] Code of Conduct (file or section)
 - [ ] Linting and formatting set up for the chosen stack
 - [ ] Test suite with at least a smoke test, full gate command passing
 - [ ] Dead code detection wired up (e.g. Knip)
