@@ -5,9 +5,12 @@ on:
         branches:
             - main
     workflow_dispatch:
+    schedule:
+        # Rebuild latest docs daily shortly after midnight UTC.
+        - cron: "15 0 * * *"
 
 concurrency:
-    group: ${{ github.actor }}-push
+    group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
