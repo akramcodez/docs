@@ -34,7 +34,7 @@ export default function Footer() {
             <FaDiscord className="h-6 w-6 group-hover:scale-110 transition-transform" />
           </a>
           <a
-            href="https://github.com/nanocollective"
+            href="https://github.com/Nano-Collective"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Nano Collective on GitHub"
@@ -43,7 +43,7 @@ export default function Footer() {
             <FaGithub className="h-6 w-6 group-hover:scale-110 transition-transform" />
           </a>
           <a
-            href="https://x.com/nanocollective"
+            href="https://x.com/nano_collective"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Nano Collective on X"
