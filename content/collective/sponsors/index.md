@@ -1,7 +1,7 @@
 ---
 title: "Sponsors"
 description: "How the Nano Collective sponsorship program is run — operations, onboarding, and offboarding"
-sidebar_order: 4
+sidebar_order: 5
 ---
 
 # Sponsors

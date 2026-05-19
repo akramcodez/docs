@@ -1,7 +1,7 @@
 ---
 title: "Organisation"
 description: "How the Nano Collective is structured, coordinated, and funded"
-sidebar_order: 3
+sidebar_order: 4
 ---
 
 # Organisation
