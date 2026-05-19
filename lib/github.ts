@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { substituteBattlemapMarkers } from "./battlemap-stats";
 
 export interface Repo {
   owner: string;
@@ -167,7 +168,7 @@ export async function fetchFileContent(
       throw new Error(`Local file not found: ${fullPath}`);
     }
 
-    return fs.readFileSync(fullPath, "utf-8");
+    return substituteBattlemapMarkers(fs.readFileSync(fullPath, "utf-8"));
   }
 
   const url = `https://raw.githubusercontent.com/${repo.owner}/${repo.name}/${version}/${filePath}`;
@@ -181,7 +182,7 @@ export async function fetchFileContent(
     throw new Error(`Failed to fetch file content: ${response.statusText}`);
   }
 
-  return response.text();
+  return substituteBattlemapMarkers(await response.text());
 }
 
 /**
