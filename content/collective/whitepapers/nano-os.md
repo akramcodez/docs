@@ -1,6 +1,6 @@
 ---
 title: "NanoOS (working title)"
-description: "A working whitepaper for an open source agent orchestration CLI that lets a user compose an oracle agent, specialist sub-agents, and custom tools into a personal operating system of agents"
+description: "A working whitepaper for an open source agent orchestration CLI that lets a user compose an oracle agent, specialist sub-agents, skill packs, and custom tools into a personal operating system of agents"
 sidebar_order: 3
 ---
 
@@ -26,7 +26,7 @@ A user who wants more than a single chat today has a small set of options:
 
 None of these gives an individual a stable, composable place to live their agent workflows in. There is no shared substrate where a user can say "here is my oracle, here are the specialists it can call, here are the tools each of them is allowed to use, and here is what I want them to remember across all of it." That gap is what this project exists to close.
 
-The need is sharper for the kind of users the Nano Collective already builds for. Someone running Nanocoder as their coding agent, get-md to feed cleaned web content into prompts, and a local model via Ollama or LM Studio already has the components of an agent stack on their machine. What they are missing is the substrate that ties those components together without locking them into someone else's platform.
+The need is sharper for the kind of users the Nano Collective already builds for. Someone running a local coding agent, a handful of utilities for cleaning and shaping content, and a local model via Ollama or LM Studio already has the components of an agent stack on their machine. What they are missing is the substrate that ties those components together without locking them into someone else's platform.
 
 ## Intended audience (open)
 
@@ -51,7 +51,7 @@ The three values that govern every Nano Collective project apply, with two carry
 
 A fourth principle, specific to this project, is worth naming:
 
-- **Composable, not monolithic.** NanoOS is a substrate, not an everything app. Sub-agents are independent projects. Tools are independent projects. Nanocoder is a sub-agent. get-md is a tool. The proxy and scrubber are tools or middleware layers. NanoOS earns its place by orchestrating well, not by absorbing the rest of the stack. The same pattern is already taking shape one layer down: Nanocoder ships a contract for user authored tools and sub-agents loaded from plain files in the project, where contributed pieces meet at a shared registry and compose without per project coordination. NanoOS extends that pattern up to the orchestration layer.
+- **Composable, not monolithic.** NanoOS is a substrate, not an everything app. Sub-agents are independent projects. Skills are independent capability packs. Tools are independent projects. NanoOS earns its place by orchestrating well, not by absorbing the rest of the stack. Contributed pieces meet at the substrate's contracts (sub-agent, skill, tool) and compose without per project coordination.
 
 ## Threat model (open)
 
@@ -79,28 +79,29 @@ The threat model lives alongside the project once it ships and evolves as the de
 
 ## Proposed approach
 
-Three primitives. Everything else composes out of them.
+Four primitives. Everything else composes out of them.
 
 ### The oracle
 
 The oracle is the top level agent in a NanoOS arrangement. The user speaks to it. It holds the conversation, the working memory, and the routing logic. When a request comes in, the oracle decides: do I answer this directly, or do I hand it off to a sub-agent that is better placed to do so?
 
-The oracle is configurable in three places:
+The oracle is configurable in four places:
 
-- **Model.** Any chat completion compatible model the user can reach. Local by default (Ollama, LM Studio, llama.cpp, MLX). Cloud models supported through the same adapter shape, with explicit configuration. The proxy and scrubber compose cleanly on the cloud path.
+- **Model.** Multi-provider by design, on the same shape the collective's existing tools already ship. Any chat completion compatible model the user can reach: local runtimes (Ollama, LM Studio, llama.cpp, MLX) and cloud providers (OpenAI, Anthropic, OpenRouter, others) sit behind a pluggable adapter. Local is the default, but the project is under no illusion that local quality on common consumer hardware is sufficient for every oracle workflow today. Cloud is a first class path, not a hidden one, and users should expect to reach for it where the work genuinely demands it. The proxy and scrubber compose cleanly on the cloud path.
 - **Sub-agents.** A declared list of specialist agents the oracle is allowed to call, with a description of what each does. The description is what the oracle reads when deciding whether to delegate.
-- **Tools.** A declared list of tools the oracle can call directly, separately from any sub-agent's own tool list. The oracle uses these for short, local, single step actions that do not warrant invoking a whole sub-agent.
+- **Skills.** A declared list of skills the oracle has access to. Each skill is a capability pack (see below) that adds a group of tools to the oracle's toolkit in one line, instead of the oracle having to name every tool individually. Skills are the unit of capability reuse across an arrangement.
+- **Tools.** A declared list of bare tools the oracle can call directly, separately from any skill or sub-agent. Used for short, local, single step actions that do not warrant invoking a whole sub-agent and are not naturally grouped with anything else.
 
-The oracle is intentionally thin. It is a router, a conversation owner, and a memory holder, not a do everything agent. The interesting capability lives in the sub-agents and the tools, not in the oracle's prompt.
+The oracle is intentionally thin. It is a router, a conversation owner, and a memory holder, not a do everything agent. The interesting capability lives in the sub-agents, the skills, and the tools, not in the oracle's prompt.
 
 ### Sub-agents
 
-A sub-agent is anything that satisfies the sub-agent contract: it accepts a structured request, it does work, it returns a structured response, and it declares what tools and resources it needs to do its job.
+A sub-agent is anything that satisfies the sub-agent contract: it accepts a structured request, it does work, it returns a structured response, and it declares what skills, tools, and resources it needs to do its job. The skills and tools fields work the same way they do for the oracle. A sub-agent that lists `skills: [k8s, observability]` and `tools: [some_one_off]` runs with the union of those skills' tool sets plus the named tool.
 
 A sub-agent can be:
 
 - **A bundled NanoOS sub-agent.** Default specialists shipped with the project (an email drafter, a calendar manager, a file organiser; final list is an open question, not a commitment).
-- **An existing Nano Collective project.** Nanocoder is the obvious first example. A user can register Nanocoder as a sub-agent and have the oracle delegate coding tasks to it.
+- **An existing agent the user already runs.** Any standalone agent (a coding agent, a writing assistant, anything that satisfies the contract) can be wrapped as a sub-agent and delegated to from the oracle.
 - **A third party agent.** Anything that conforms to the contract. The contract is small enough that wrapping an existing agent is a thin shim, not a port.
 - **Another NanoOS instance.** A sub-agent can itself be an oracle with its own sub-agents under it. Recursive composition is a first class shape, not an accident. A user might run a "work" oracle and a "personal" oracle and have a top level oracle delegate to either.
 
@@ -121,6 +122,25 @@ Tools are intentionally not agents. A tool does not have a model. A tool runs a 
 - Calls to other Nano Collective utilities (get-md, json-up) where they fit the tool shape.
 
 The tool contract is small enough that any user can write one. Tool authors declare what their tool needs (network, filesystem paths, environment variables); the user grants or denies; the oracle and sub-agents see only the tools the user has granted to them.
+
+### Skills
+
+A skill is a reusable capability pack: a set of tools grouped together by purpose, behind one manifest. A skill has no identity of its own. It is not an agent. It is a unit of capability that an oracle or a sub-agent attaches to itself in one line.
+
+Concretely, a skill bundles:
+
+- A set of tools that belong together. A `k8s` skill might ship `k8s_pods`, `k8s_logs`, and `k8s_describe`. A `content-tools` skill might ship a drafting tool, a content calendar tool, and a posting tool.
+- A short description so an agent knows what the skill is for.
+- Optionally, a slash command or two that compose with the tools.
+- Optionally, an event subscription that lets a tool in the skill respond to runtime events directly without an agent in the loop.
+
+An oracle or a sub-agent declares the skills it has access to by name (`skills: [k8s, observability, incident-response]`). At execution time, the agent's effective tool list is the union of every tool from every skill it lists, plus any bare tools it has named individually. The same skill attaches to many agents. One agent composes many skills. That orthogonality is what makes the arrangement scale.
+
+The reason this matters is that a single user agent in a real arrangement can need fifteen or twenty tools across three or four logical groups. Listing each tool by name on the agent flattens that structure into a wall of names. Listing skills preserves it. The CMO sub-agent says `skills: [content-tools]`, not a list of every drafting and scheduling tool it depends on.
+
+Why not collapse skills into sub-agents? Because a sub-agent is an identity (a system prompt, a model, a job) and a skill is a capability (a set of tools). Different sub-agents reuse the same skill. One skill should not be welded to one sub-agent's identity. Keeping them orthogonal is what lets the CMO and the CEO both attach the same `content-tools` skill without each redefining what is inside it.
+
+A skill is also the natural unit for sharing. The bundle is a directory plus a manifest; "install a skill" is a `cp -r` into the user's config and a manifest validation, nothing more. A community catalogue, when one exists, is a packaging problem on top of an existing format.
 
 ### The execution model
 
@@ -160,13 +180,15 @@ The shape of the design lands better against a concrete arrangement than against
 
 The user runs a top level oracle. Through conversation, they describe what they are trying to do (launch and run a SaaS), and over time the oracle helps them register the sub-agents and tools that arrangement needs. The state the user ends up with looks roughly like this:
 
-- **Oracle.** The user's entry point. Local model by default. Holds shared memory about the business: the product, the brand voice, the current priorities.
-- **CEO sub-agent.** Itself a NanoOS instance, so it has its own oracle, its own sub-agents, and its own tools. The oracle delegates anything that reads as a business decision or a multi function task to the CEO.
-  - **CMO sub-agent.** A flat sub-agent under the CEO. No further delegation. Tools: a drafting tool, a content calendar tool, a posting tool for whichever channels the user has connected, get-md for reading competitor pages and source material.
-  - **CTO sub-agent.** Nanocoder, registered as a sub-agent. Nanocoder is itself an agent with its own internal delegation, so this branch is recursive without the user having had to design that recursion themselves. Tools: the project repository, the test runner, the deployment hook, scoped to the SaaS's working directory.
-- **Tools attached directly to the oracle.** Calendar, inbox triage, file read on the business folder. Short, local actions the oracle handles without invoking a whole sub-agent.
+- **Oracle.** The user's entry point. Local model by default. Holds shared memory about the business: the product, the brand voice, the current priorities. Skills attached: `personal-admin` (calendar, inbox triage, file read on the business folder).
+- **CEO sub-agent.** Itself a NanoOS instance, so it has its own oracle, its own sub-agents, and its own skills and tools. The oracle delegates anything that reads as a business decision or a multi function task to the CEO. Skills attached: `business-strategy` (planning frameworks, decision logs, OKR tracking).
+  - **CMO sub-agent.** A flat sub-agent under the CEO. No further delegation. Skills attached: `content-tools` (drafting, content calendar, posting for whichever channels the user has connected). Bare tools: `get-md` for reading competitor pages and source material.
+  - **CTO sub-agent.** A coding sub-agent, registered against the project repository. Skills attached: `code-review`, `test-runner`, `deploy`. Scoped to the SaaS's working directory. If the coding agent is itself an orchestrator (with its own internal delegation), this branch becomes recursive without the user having had to design that recursion themselves.
+- **Skills installed but not yet attached.** A growing local catalogue of capability packs the user has installed (`k8s`, `observability`, `customer-research`, others). They sit available; the user attaches them to whichever agent needs them when the need lands.
 
-Each layer has its own memory. The oracle remembers the brand voice and the user's preferences. The CEO remembers strategic context (current quarter goals, open initiatives). The CMO remembers the content calendar and the channels' posting rules. The CTO (Nanocoder) remembers the codebase the way Nanocoder already does. Shared memory (the user's name, the product name, the time zone) is held by the top level oracle and read by anyone below who has been granted access.
+Each layer has its own memory. The oracle remembers the brand voice and the user's preferences. The CEO remembers strategic context (current quarter goals, open initiatives). The CMO remembers the content calendar and the channels' posting rules. The CTO remembers the codebase. Shared memory (the user's name, the product name, the time zone) is held by the top level oracle and read by anyone below who has been granted access.
+
+Each layer also has its own skills. Skills are not memory; they are the capability shape an agent carries. The CMO does not learn its skills over time. Its skills are declared once on its definition, and they change only when the user attaches or removes one. That separation, capability via skills, history via memory, is what keeps the arrangement legible as it grows.
 
 ### A request flowing through it
 
@@ -175,11 +197,11 @@ The user types into the oracle: "We need a launch announcement for the new prici
 1. The oracle reads the request. It is a multi function business task with a deadline. The oracle delegates to the **CEO**.
 2. The CEO decomposes: the announcement needs marketing copy and a check that the pricing page in the app actually reflects the new tier. It delegates the copy to the **CMO** and the pricing page check to the **CTO**.
 3. The CMO drafts the copy using its drafting tool, pulls competitor framing through get-md, and schedules a draft post in the content calendar tool. Returns the draft and the scheduled time to the CEO.
-4. The CTO (Nanocoder) opens the repository, finds the pricing page component, confirms the new tier is wired up, runs the relevant tests, and returns a status to the CEO. Internally, Nanocoder may have delegated to its own sub-agents to do the file reads and the test run; the CEO does not see or need to see that.
+4. The CTO opens the repository, finds the pricing page component, confirms the new tier is wired up, runs the relevant tests, and returns a status to the CEO. Internally, the CTO may have delegated to its own sub-agents to do the file reads and the test run; the CEO does not see or need to see that.
 5. The CEO integrates both responses, notices that the pricing page is missing one feature bullet for the new tier, asks the CTO to add it (a second round trip), and then returns a consolidated status to the oracle.
 6. The oracle replies to the user with the draft copy, the scheduled time, and a one line note about the pricing page fix.
 
-The user wrote one sentence. Six agents (oracle, CEO, CMO, CTO, and Nanocoder's own internal sub-agents) and a handful of tools did the work. The user can inspect any layer of that call tree, read the memory each agent wrote, revoke a tool, swap a model, or fire a sub-agent and replace it without rewriting the rest of the arrangement.
+The user wrote one sentence. Several agents (oracle, CEO, CMO, CTO, and any internal sub-agents the CTO delegated to) and a handful of tools did the work. The user can inspect any layer of that call tree, read the memory each agent wrote, revoke a tool, swap a model, or fire a sub-agent and replace it without rewriting the rest of the arrangement.
 
 ### Why this shape is the point
 
@@ -195,12 +217,13 @@ A deliberately narrow v1, shipped well.
 
 - **A CLI.** Single binary install. Run `nanos` (or whatever the final name is); land in an oracle session. No GUI, no daemon, no server in v1.
 - **One oracle, configurable.** Local model by default. Cloud models supported with explicit configuration.
-- **A small default sub-agent set.** Probably two or three, picked for being broadly useful and tractable to ship: a Nanocoder integration, and one or two others to be argued.
-- **A small default toolkit.** Filesystem within a declared root, shell with allowlist, HTTP fetch through the privacy stack where configured. Possibly get-md as a tool.
+- **A small default sub-agent set.** Probably two or three, picked for being broadly useful and tractable to ship. Specific candidates to be argued.
+- **Skills as a first class primitive.** A skill is a directory plus a manifest. The oracle and sub-agents attach skills by name. A small default skill set ships in the box; a user installed skill is a `cp -r` away.
+- **A small default toolkit.** Filesystem within a declared root, shell with allowlist, HTTP fetch through the privacy stack where configured. Possibly get-md as a tool. Bare tools, not bundled into skills, are for one off names that do not belong with anything else.
 - **Plain file based memory.** Conversation history on disk. Per agent memory in declared paths. No database.
-- **The sub-agent and tool contracts published as a stable v1.** Third parties can build against them from day one.
+- **The sub-agent, skill, and tool contracts published as a stable v1.** Third parties can build against them from day one.
 
-What v1 ships is "an oracle, a small set of competent specialists, a small set of useful tools, a clear contract for adding more." Not a complete agent OS. The starting point that grows.
+What v1 ships is "an oracle, a small set of competent specialists, a small set of capability packs, a small set of useful tools, a clear contract for adding more." Not a complete agent OS. The starting point that grows.
 
 ## What it is not (in v1)
 
@@ -209,16 +232,13 @@ What v1 ships is "an oracle, a small set of competent specialists, a small set o
 - **Not a chat UI.** A CLI is the v1 surface. UIs may come later or may be downstream consumers of the substrate.
 - **Not a multi user platform.** Single user, single machine. Team workflows are out of scope until single user lands well.
 - **Not a model.** NanoOS uses whichever models the user configures. It is not training, fine tuning, or shipping a model of its own.
-- **Not a replacement for Nanocoder.** Nanocoder is a sub-agent under NanoOS, not absorbed into it. The two ship independently.
+- **Not a replacement for any existing agent.** Existing agents (coding agents, writing tools, anything else the user already runs) become sub-agents under NanoOS, not absorbed into it. They ship independently.
 - **Not a moderation, safety, or alignment layer.** Out of scope. The substrate is neutral about what the user wants their agents to do; the permissions model is about preventing accidental harm, not about policing intent.
 
 ## Composition with other collective projects
 
-The collective's existing stack composes naturally with this substrate:
+Most collective projects compose with this substrate through the generic contracts (sub-agent, skill, tool). A few have a more specific integration shape worth naming:
 
-- **Nanocoder** registers as a sub-agent. The oracle delegates coding tasks to it. Nanocoder's own model, tools, and memory remain its own; the oracle does not reach inside it. Nanocoder is itself becoming a substrate in the same shape NanoOS argues for: user authored tools and sub-agents drop into the project as plain files, register through a shared contract, and compose with the built in set. NanoOS is not orchestrating a black box. It is orchestrating substrates that are themselves orchestrators, and the value of that arrangement grows as the layers underneath also commit to composition.
-- **get-md** registers as a tool. Any sub-agent that needs to feed web content into a model gets clean Markdown for free.
-- **json-up** registers as a tool. Any sub-agent that handles structured data has type safe migrations available.
 - **The [Prompt Scrubber](/collective/whitepapers/prompt-scrubber)** runs as middleware on any sub-agent that talks to a model. Scrubbed prompts go out; rehydrated responses come back. The oracle does not have to know.
 - **The [Private Inference Proxy](/collective/whitepapers/private-inference-proxy)** is the configured network path for cloud model calls. A sub-agent that uses a cloud model talks to the proxy, not directly to the provider.
 - **Nanotune** is upstream of the model layer rather than a runtime component. Models fine tuned through Nanotune are first class oracles or sub-agent backbones.
@@ -257,21 +277,23 @@ These are the questions the whitepaper exists to argue.
 
 1. **Naming.** "NanoOS" is the working title. It has the right scope but invites confusion with literal operating systems. Alternatives in the "Nano" prefixed family or the lowercase hyphenated utility family are worth proposing.
 2. **Audience for v1.** Power users running personal automations, or developers building multi agent products? The two read the docs differently and want different defaults.
-3. **Default sub-agent set.** What ships in the box. Candidates: a Nanocoder integration, a research / web reading agent, an inbox / triage agent, a calendar agent, a file organiser. The right v1 list is probably two or three, not all of them.
+3. **Default sub-agent set.** What ships in the box. Candidates: a coding agent integration, a research / web reading agent, an inbox / triage agent, a calendar agent, a file organiser. The right v1 list is probably two or three, not all of them.
 4. **Default tool set.** Same question for tools. The bias is toward fewer, well scoped, well documented tools.
-5. **Tool contract: roll our own, adopt MCP, or align with Nanocoder.** Three candidates. MCP brings free interoperability with a growing external ecosystem but inherits decisions the collective did not make. Rolling our own gives full control at the cost of being yet another contract in the world. Aligning with the markdown tool format Nanocoder is shipping for user authored tools would mean a single artifact format used up and down the collective's stack: a tool a user writes for Nanocoder is automatically a tool NanoOS can register, and any future community registry serves both projects rather than fragmenting. The three options are not mutually exclusive (MCP could be the wire format under a Nanocoder shaped authoring experience), and the right answer is probably a composition. A clean evaluation against privacy, locality, and the collective's own emerging conventions is required before v1.
+5. **Tool contract: roll our own, adopt MCP, or align with an existing format.** Multiple candidates. MCP brings free interoperability with a growing external ecosystem but inherits decisions the collective did not make. Rolling our own gives full control at the cost of being yet another contract in the world. Aligning with a format another collective project is already shipping (e.g., a markdown tool format) would mean a single artifact format usable across projects, at the cost of coupling our pace to theirs. The options are not mutually exclusive (MCP could be the wire format under any authoring experience), and the right answer is probably a composition. A clean evaluation against privacy, locality, and the substrate's own design pressure is required before v1.
 6. **Sub-agent contract.** Whether to define our own, lean on an existing protocol, or compose (MCP for tools, our own for sub-agents). Stability of the contract matters more than its elegance.
-7. **Recursion in v1.** Flat (oracle plus sub-agents) is simpler and ships sooner. Recursive (sub-agents that are themselves NanoOS instances) is the design's centre of gravity. Whether to ship recursion in v1 or as phase 2 is open.
-8. **Memory model.** Plain files is the right shape. Open questions: what schema, what scoping rules between agents, how shared memory is mediated, how the user inspects and edits it.
-9. **Permissions UX.** Where the slider sits between "declared at registration" and "prompt at use." The honest answer is "both, in carefully chosen places"; the design is in which actions sit where.
-10. **Configuration shape.** A single config file describing the arrangement (oracle model, sub-agents, tools, memory paths) is the default. Whether to support multiple named arrangements per machine (personal / work / research) in v1 or later.
-11. **State portability.** Whether an arrangement is portable between machines. The on disk state is plain files, so it is portable in principle; whether the project provides explicit import / export is a separate question.
-12. **Cloud model defaults.** The local-first principle says local by default. The realistic concern is that local model quality at common consumer hardware specs is not yet enough for the oracle role in all workflows. Whether the project ships with a recommended local model floor, a recommended fallback, or neither, is open.
-13. **Headless and scheduled use.** A user who wants the email triage agent to run on a cron does not want to start a CLI session every time. Whether v1 supports a headless or scheduled mode, or parks it for phase 2, is open.
-14. **Observability and debugging.** A recursive call tree is hard to debug when something goes wrong. What v1 ships for tracing, replay, and per turn inspection is part of the user experience, not a power user feature.
-15. **Relationship to Nanocoder.** Nanocoder is the most natural first sub-agent. Whether NanoOS ships with a bundled Nanocoder integration or expects the user to install Nanocoder separately is a question with real ergonomic stakes.
-16. **Stack.** TypeScript follows the rest of the collective and the Nanocoder lineage. A case for Rust or Go exists if the substrate ends up doing real work in the hot path. Default is TS unless argued otherwise.
-17. **Arrangements as packageable artifacts.** If tools and sub-agents are portable files that meet at a shared contract, then a whole arrangement (oracle config plus its sub-agent set plus its tool set plus any shared memory seeds) is also a portable artifact. The "business team" worked example could ship as a template a user clones, edits, and runs, rather than as a bespoke setup they assemble by hand. Whether arrangement packaging is a v1 surface, a phase 2 milestone, or something the format simply does not foreclose, is open. The v1 design should at least avoid making this harder later.
+7. **Skill contract.** A skill is a manifest plus a directory of tools and optionally commands. The exact manifest fields, naming rules, scoping semantics, and event subscription shape are open. Worth designing in their own right rather than borrowing wholesale from any other project. Cross project alignment with whatever shape other tools end up shipping is a nice to have, not a requirement.
+8. **Skill scoping and sharing.** A skill installed once should be attachable to any agent in the user's arrangement. Open: where installed skills live on disk, whether the loader scopes them by arrangement (personal vs work), and what the install flow looks like in v1 (a `cp -r` is the floor; a community catalogue is the ceiling).
+9. **Recursion in v1.** Flat (oracle plus sub-agents) is simpler and ships sooner. Recursive (sub-agents that are themselves NanoOS instances) is the design's centre of gravity. Whether to ship recursion in v1 or as phase 2 is open.
+10. **Memory model.** Plain files is the right shape. Open questions: what schema, what scoping rules between agents, how shared memory is mediated, how the user inspects and edits it.
+11. **Permissions UX.** Where the slider sits between "declared at registration" and "prompt at use." The honest answer is "both, in carefully chosen places"; the design is in which actions sit where. Skills add a wrinkle: a skill is granted at attachment time, not per tool, which suggests the permission unit at the manifest level is the skill, not the individual tool inside it. Worth arguing.
+12. **Configuration shape.** A single config file describing the arrangement (oracle model, sub-agents, skills, tools, memory paths) is the default. Whether to support multiple named arrangements per machine (personal / work / research) in v1 or later.
+13. **State portability.** Whether an arrangement is portable between machines. The on disk state is plain files, so it is portable in principle; whether the project provides explicit import / export is a separate question.
+14. **Cloud model defaults.** The local-first principle says local by default. The realistic concern is that local model quality at common consumer hardware specs is not yet enough for the oracle role in all workflows. Whether the project ships with a recommended local model floor, a recommended fallback, or neither, is open.
+15. **Headless and scheduled use.** A user who wants the email triage agent to run on a cron does not want to start a CLI session every time. Whether v1 supports a headless or scheduled mode, or parks it for phase 2, is open.
+16. **Observability and debugging.** A recursive call tree is hard to debug when something goes wrong. What v1 ships for tracing, replay, and per turn inspection is part of the user experience, not a power user feature.
+17. **Bundled integrations.** Whether NanoOS ships with any sub-agents pre wired (a coding agent, an inbox triage agent, etc.) or expects the user to install them separately is an ergonomics question with real stakes. The substrate works either way; the install experience does not.
+18. **Stack.** TypeScript follows the rest of the collective. A case for Rust or Go exists if the substrate ends up doing real work in the hot path. Default is TS unless argued otherwise.
+19. **Arrangements as packageable artifacts.** If skills, tools, and sub-agents are portable files that meet at a shared contract, then a whole arrangement (oracle config plus its sub-agent set plus its skill set plus any shared memory seeds) is also a portable artifact. The "business team" worked example could ship as a template a user clones, edits, and runs, rather than as a bespoke setup they assemble by hand. Whether arrangement packaging is a v1 surface, a phase 2 milestone, or something the format simply does not foreclose, is open. The v1 design should at least avoid making this harder later.
 
 ## Next steps
 
@@ -281,11 +303,13 @@ For this whitepaper to graduate into docs:
 - [ ] Resolve the naming question.
 - [ ] Evaluate MCP for the tool contract; decide adopt, compose, or roll our own.
 - [ ] Pick the sub-agent contract approach and write a draft contract document.
+- [ ] Lock the skill manifest format and the agent-skill binding semantics.
+- [ ] Pick the default skill set that ships in the box.
 - [ ] Decide whether recursion ships in v1 or phase 2.
 - [ ] Pick the default sub-agent set and the default tool set.
-- [ ] Sketch the permissions UX in enough detail that the trade off can be argued, not just stated.
+- [ ] Sketch the permissions UX in enough detail that the trade off can be argued, not just stated. Decide whether the unit of grant is the skill or the tool.
 - [ ] Measure latency and cost on a representative arrangement against representative local hardware before locking the design.
-- [ ] Decide the Nanocoder integration shape (bundled or separate).
+- [ ] Decide whether any sub-agents ship bundled with NanoOS, or whether the user installs all of them separately.
 - [ ] Confirm at least one committed maintainer and one design partner from the collective.
 
 When those are settled, this document becomes the foundation of the project's README and design notes. The repository is created under [`Nano-Collective`](https://github.com/Nano-Collective), and the [Creating a New Project](/collective/projects/creating-a-new-project) playbook takes over.
