@@ -55,15 +55,17 @@ If you want to discuss whether a piece of work could be a bounty, talk to a main
 
 ## Where the fund is today
 
-Honest version: the community fund is real in design and at the very beginning in practice. Donations and sponsorship — the two channels that feed it today — are only just rolling out, and other operating revenue is not yet flowing.
+Honest version: the community fund is a mechanism, not yet a balance. The structure exists — fiscal hosting via Open Source Collective, public ledger, ring-fenced share of incoming funds — but there is effectively nothing in it to spend yet.
 
 What this means right now:
 
-- Bounty capacity is small, and will grow as donations and sponsorships come in.
-- A maintainer agreeing a bounty with you will be straightforward about what is and isn't fundable today.
+- The sponsorship program is newly launched and not yet signed.
+- Partnerships are being actively pursued and not yet in place.
+- Bounty capacity today is essentially zero. There are no active bounties drawn from a pool of community-fund money.
+- A maintainer agreeing a bounty with you will be straightforward about what is and isn't fundable. In practice, today, paid work is more likely to take the shape of a designated donation scoped with the core team than a draw from a standing fund.
 - All inflows and outflows are visible on the public Open Collective ledger in real time — anyone can see what's coming in and what's going out, at any time.
 
-The mechanism is in place; the volume is naturally constrained at this early stage. As donations and sponsorships grow and operating revenue begins to flow, the share of incoming funds ring-fenced for bounties — and the amount in the fund — will be published transparently via Open Collective.
+The mechanism is in place; the volume is not. As donations, sponsorships, partnerships, and other operating revenue come online, the share ring-fenced for bounties — and the amount in the fund — will be published transparently via Open Collective. The honesty about today's state is itself the commitment: we will not overstate capacity, and we will not promise from an empty pool.
 
 ## Funding and payouts
 
