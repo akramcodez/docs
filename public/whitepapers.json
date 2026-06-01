@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T09:34:35.144Z",
+  "generated_at": "2026-06-01T12:37:16.578Z",
   "count": 6,
   "whitepapers": [
     {
@@ -60,7 +60,7 @@
     {
       "slug": "marketplace",
       "title": "Marketplace (working title)",
-      "description": "A working whitepaper for an open, harness-agnostic marketplace and packaging format for agent assets — skills, tools, prompts, sub-agents — that can be installed into any agent harness without rewriting",
+      "description": "A working whitepaper for an open, harness-agnostic marketplace and packaging format for agent assets (skills, tools, prompts, sub-agents) that can be installed into any agent harness without rewriting",
       "proposer": "Matt Spence",
       "proposer_github": "mrspence",
       "status": "In public review",
