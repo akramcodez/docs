@@ -29,9 +29,15 @@ This sheet does not need to live in any repository once filled. It is a message 
 
 ### Who you are working with
 
-The core team is listed on the public [contributors page](https://nanocollective.org/contributors) (the people with a Core Team badge). A quick orientation to who does what:
+The core team is listed on the public [contributors page](https://nanocollective.org/contributors) (the people with a Core Team badge), which is the canonical, up to date source. A quick orientation to who does what, so you know who to bring things to:
 
-*A short who-is-who. For each core team member, a line on what they tend to own or are the best person to ask about. This is the map that the rest of us carry in our heads and that you do not have yet.*
+- **Will Lamerton** (Engineering, Direction). Founder. Overall direction and where the collective is heading, alongside engineering. The first stop for anything about scope or priorities.
+
+- **Matthew Spence** (Engineering). Engineering across the collective's projects.
+
+- **Ben Parry** (Community, Advocacy). The community and the public case for open, local AI: writing, outreach, and the people side of the collective.
+
+*Tailor this to the person joining if their work brings them closer to some of the team than others. The focus tags mirror the [contributors page](https://nanocollective.org/contributors); keep them in step if either changes.*
 
 ### What you will be working on
 
