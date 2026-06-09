@@ -3,6 +3,7 @@
 import type { $NextraMetadata, Heading } from "nextra";
 import { useMDXComponents } from "nextra-theme-docs";
 import type { ReactNode } from "react";
+import type { WhitepaperIssueCounts } from "@/lib/whitepapers";
 import { WhitepaperMetaProvider } from "./WhitepaperMeta";
 
 interface CollectiveWrapperProps {
@@ -22,6 +23,13 @@ interface CollectiveWrapperProps {
    * render the feedback widget in their header.
    */
   pageSlug?: string;
+  /**
+   * Build-time open/closed issue counts for the current whitepaper,
+   * sourced from `public/whitepapers.json` (populated by the daily
+   * 00:15 UTC deploy). Optional — when missing the feedback widget
+   * simply omits the count row.
+   */
+  issueCounts?: WhitepaperIssueCounts;
   sourceCode?: string;
 }
 
@@ -30,6 +38,7 @@ export function CollectiveWrapper({
   children,
   metadata,
   pageSlug,
+  issueCounts,
   sourceCode,
 }: CollectiveWrapperProps) {
   const components = useMDXComponents({});
@@ -52,6 +61,7 @@ export function CollectiveWrapper({
           status: metadata.status,
           review_opens: metadata.review_opens,
           review_closes: metadata.review_closes,
+          issueCounts,
         }}
       >
         {children}

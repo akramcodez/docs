@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, type ReactNode, useContext } from "react";
+import type { WhitepaperIssueCounts } from "@/lib/whitepapers";
 import { ProposerBadge } from "./ProposerBadge";
 import { StatusBadge } from "./StatusBadge";
 import { WhitepaperFeedbackInline } from "./WhitepaperFeedbackSidebar";
@@ -13,6 +14,7 @@ interface WhitepaperMeta {
   status?: string;
   review_opens?: string;
   review_closes?: string;
+  issueCounts?: WhitepaperIssueCounts;
 }
 
 const WhitepaperMetaContext = createContext<WhitepaperMeta | null>(null);
@@ -49,7 +51,10 @@ export function WhitepaperMetaInline() {
         />
       )}
       {meta.slug && meta.title && (
-        <WhitepaperFeedbackInline title={meta.title} />
+        <WhitepaperFeedbackInline
+          title={meta.title}
+          issueCounts={meta.issueCounts}
+        />
       )}
     </div>
   );

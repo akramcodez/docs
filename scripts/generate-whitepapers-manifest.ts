@@ -10,6 +10,12 @@
  *
  * Source of truth is the frontmatter in
  * content/collective/whitepapers/<slug>.md.
+ *
+ * As a side-effect, this script also fetches the open + closed issue counts
+ * for each whitepaper (matched by the `Feedback for "<title>"` title
+ * prefix) and embeds them in the manifest so the docs UI can render the
+ * counts as static HTML. The counts are populated by the daily 00:15 UTC
+ * deploy workflow, which has GITHUB_TOKEN injected.
  */
 
 import fs from "node:fs";
@@ -24,6 +30,18 @@ const WHITEPAPERS_DIR = path.join(
 
 const OUT_PATH = path.join(process.cwd(), "public", "whitepapers.json");
 
+// Repo where whitepaper feedback issues live. Matched by title prefix
+// `Feedback for "<page title>"` to stay consistent with Nextra's default
+// feedback link and the new-issue link in the whitepaper header widget.
+const FEEDBACK_REPO_OWNER = "Nano-Collective";
+const FEEDBACK_REPO_NAME = "docs";
+
+interface WhitepaperIssueCounts {
+  open: number;
+  closed: number;
+  total: number;
+}
+
 interface WhitepaperManifestEntry {
   slug: string;
   title: string;
@@ -34,6 +52,7 @@ interface WhitepaperManifestEntry {
   review_opens?: string;
   review_closes?: string;
   sidebar_order?: number;
+  issue_counts?: WhitepaperIssueCounts;
 }
 
 function unquote(raw: string): string {
@@ -66,7 +85,7 @@ function parseFrontmatter(raw: string): Record<string, string | number> {
   return out;
 }
 
-function buildManifest(): WhitepaperManifestEntry[] {
+function buildManifestBase(): WhitepaperManifestEntry[] {
   if (!fs.existsSync(WHITEPAPERS_DIR)) {
     console.warn(`Whitepapers directory not found: ${WHITEPAPERS_DIR}`);
     return [];
@@ -114,8 +133,87 @@ function buildManifest(): WhitepaperManifestEntry[] {
   return entries;
 }
 
-function main(): void {
-  const manifest = buildManifest();
+/**
+ * Fetch open + closed issue counts for a whitepaper from GitHub, matching
+ * issues whose title contains the `Feedback for "<title>"` phrase. The
+ * docs UI uses the same phrase in its new-issue link, so issues opened
+ * from anywhere in the docs flow into this count.
+ *
+ * Requires a GITHUB_TOKEN with public-repo read access. The daily
+ * deploy workflow (`.github/workflows/deploy.yaml`) injects
+ * `secrets.GITHUB_TOKEN` for us. In local dev with no token, the
+ * function bails and `issue_counts` is simply omitted from the entry.
+ */
+async function fetchIssueCounts(
+  title: string,
+): Promise<WhitepaperIssueCounts | undefined> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) {
+    console.warn(
+      "GITHUB_TOKEN not set — skipping issue count fetch. Counts will be missing from the manifest.",
+    );
+    return undefined;
+  }
+
+  // Match the same query the client component would use: scoped to the
+  // title field, this repo, and the exact phrase `Feedback for "<title>"`.
+  const phrase = `Feedback for \u201C${title}\u201D`;
+  const baseParams = new URLSearchParams();
+  baseParams.set(
+    "q",
+    `repo:${FEEDBACK_REPO_OWNER}/${FEEDBACK_REPO_NAME} is:issue in:title "${phrase}"`,
+  );
+  const openUrl = `https://api.github.com/search/issues?${baseParams.toString()}&per_page=1`;
+  const closedUrl = `https://api.github.com/search/issues?${baseParams.toString()}&per_page=1`;
+
+  const headers: HeadersInit = {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "User-Agent": "nano-collective-docs-manifest",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+
+  try {
+    const [openRes, closedRes] = await Promise.all([
+      fetch(`${openUrl}+is:open`, { headers, cache: "no-store" }),
+      fetch(`${closedUrl}+is:closed`, { headers, cache: "no-store" }),
+    ]);
+
+    if (!openRes.ok || !closedRes.ok) {
+      console.warn(
+        `Issue count fetch for "${title}" failed (open=${openRes.status}, closed=${closedRes.status}) — skipping.`,
+      );
+      return undefined;
+    }
+
+    const [openJson, closedJson] = (await Promise.all([
+      openRes.json(),
+      closedRes.json(),
+    ])) as Array<{ total_count?: number }>;
+
+    const open = openJson.total_count ?? 0;
+    const closed = closedJson.total_count ?? 0;
+    return { open, closed, total: open + closed };
+  } catch (err) {
+    console.warn(
+      `Issue count fetch for "${title}" threw: ${err instanceof Error ? err.message : String(err)} — skipping.`,
+    );
+    return undefined;
+  }
+}
+
+async function main(): Promise<void> {
+  const manifest = buildManifestBase();
+
+  // Fetch issue counts sequentially to be polite to the rate limit. The
+  // search API is shared across all label-scoped queries (30 req/min
+  // authenticated) so parallelism isn't worth the risk of bursting.
+  for (const entry of manifest) {
+    const counts = await fetchIssueCounts(entry.title);
+    if (counts) {
+      entry.issue_counts = counts;
+    }
+  }
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   const payload = {

@@ -3,6 +3,7 @@ import path from "node:path";
 import { notFound } from "next/navigation";
 import { compileMdx } from "nextra/compile";
 import { evaluate } from "nextra/evaluate";
+import { getWhitepaperIssueCounts } from "@/lib/whitepapers";
 import { useMDXComponents } from "../../../mdx-components";
 
 interface PageProps {
@@ -87,11 +88,23 @@ export default async function CollectivePage({ params }: PageProps) {
 
   const { CollectiveWrapper } = await import("@/components/CollectiveWrapper");
 
+  // Read the build-time issue counts for this whitepaper from the
+  // manifest (populated by the daily 00:15 UTC deploy via
+  // scripts/generate-whitepapers-manifest.ts). The page is a server
+  // component, so we can read the file directly and pass the counts
+  // through the wrapper into the client widget as static initial
+  // state — no runtime fetch from the browser.
+  const isWhitepaperPage = slug[0] === "whitepapers" && slug.length >= 2;
+  const issueCounts = isWhitepaperPage
+    ? getWhitepaperIssueCounts(slug[slug.length - 1])
+    : undefined;
+
   return (
     <CollectiveWrapper
       toc={toc}
       metadata={mdxMetadata || {}}
       pageSlug={slug.join("/")}
+      issueCounts={issueCounts}
       sourceCode={found.content}
     >
       <MDXContent />
