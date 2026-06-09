@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T09:31:05.703Z",
+  "generated_at": "2026-06-09T11:09:17.291Z",
   "count": 6,
   "whitepapers": [
     {
@@ -15,7 +15,7 @@
     },
     {
       "slug": "prompt-scrubber",
-      "title": "Prompt Scrubber (working title)",
+      "title": "prompt-scrub",
       "description": "A working whitepaper for a small open source tool that scrubs identifying content from LLM prompts and messages before they leave the user's machine",
       "proposer": "Will Lamerton",
       "proposer_github": "will-lamerton",
