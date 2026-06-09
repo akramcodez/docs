@@ -157,14 +157,20 @@ async function fetchIssueCounts(
 
   // Match the same query the client component would use: scoped to the
   // title field, this repo, and the exact phrase `Feedback for "<title>"`.
+  // The state qualifier (`is:open` / `is:closed`) is part of the `q` value
+  // because search qualifiers in GitHub's API are not separate parameters —
+  // they must be appended with a space (encoded as `+` by URLSearchParams).
+  // NOTE: state must be built per call, so we can't share the URL.
   const phrase = `Feedback for \u201C${title}\u201D`;
-  const baseParams = new URLSearchParams();
-  baseParams.set(
-    "q",
-    `repo:${FEEDBACK_REPO_OWNER}/${FEEDBACK_REPO_NAME} is:issue in:title "${phrase}"`,
-  );
-  const openUrl = `https://api.github.com/search/issues?${baseParams.toString()}&per_page=1`;
-  const closedUrl = `https://api.github.com/search/issues?${baseParams.toString()}&per_page=1`;
+  const buildUrl = (state: "open" | "closed"): string => {
+    const params = new URLSearchParams();
+    params.set(
+      "q",
+      `repo:${FEEDBACK_REPO_OWNER}/${FEEDBACK_REPO_NAME} is:issue in:title "${phrase}" is:${state}`,
+    );
+    params.set("per_page", "1");
+    return `https://api.github.com/search/issues?${params.toString()}`;
+  };
 
   const headers: HeadersInit = {
     Accept: "application/vnd.github+json",
@@ -175,8 +181,8 @@ async function fetchIssueCounts(
 
   try {
     const [openRes, closedRes] = await Promise.all([
-      fetch(`${openUrl}+is:open`, { headers, cache: "no-store" }),
-      fetch(`${closedUrl}+is:closed`, { headers, cache: "no-store" }),
+      fetch(buildUrl("open"), { headers, cache: "no-store" }),
+      fetch(buildUrl("closed"), { headers, cache: "no-store" }),
     ]);
 
     if (!openRes.ok || !closedRes.ok) {
